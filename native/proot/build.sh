@@ -1,15 +1,4 @@
 #!/usr/bin/env bash
-#
-# Builds the four binaries androsid uses to run PRoot, from pinned upstream sources,
-# with the Android NDK:
-#
-#   libproot.so          PRoot (termux/proot fork)   GPL-2.0-or-later
-#   libproot_loader.so   PRoot's loader              GPL-2.0-or-later
-#   libtalloc.so         talloc                      LGPL-3.0-or-later
-#   libandroid-shmem.so  libandroid-shmem            BSD-3-Clause
-#
-# Usage:
-#   ANDROID_NDK_HOME=/path/to/android-ndk-r29 native/proot/build.sh
 
 set -euo pipefail
 export LC_ALL=C
@@ -75,7 +64,7 @@ need_tools() {
 }
 
 # PRoot's makefile runs `readelf -s loader | awk -f loader-info.awk` on arm64, and that script
-# uses strtonum(), which only GNU awk has. Debian and Ubuntu default to mawk.
+# uses strtonum(), which only GNU awk has.
 ensure_gnu_awk() {
   if awk 'BEGIN { exit !(strtonum("0x10") == 16) }' 2>/dev/null; then
     return 0
