@@ -42,7 +42,7 @@ holds the four files, for example `android/app/src/main/jniLibs/arm64-v8a`.
 
 ## Publishing a new set
 
-1. Change the pins at the top of `build.sh` if needed. Everything that gets built is named there.
+1. Change the pins at the top of `build.sh` if needed. Everything that gets built is named.
 2. Merge the change. Pull requests that touch this folder build the binaries and keep them as a
    workflow artifact, but publish nothing.
 3. Tag the commit with the next number (`proot-binaries-1` for the first set) and push the tag:
