@@ -13,7 +13,7 @@ library directory, the only place an app is allowed to execute files from.
 
 They are not kept in git. [`build.sh`](build.sh) builds them from pinned sources with the Android NDK,
 a GitHub workflow runs it and publishes the result as a release, and the Android build downloads them
-from there. Licenses and sources are listed in [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md).
+from there. Each release has the sources of all three projects attached.
 
 ## Building the app
 
