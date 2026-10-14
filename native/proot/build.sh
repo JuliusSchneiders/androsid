@@ -37,6 +37,9 @@ API=24
 
 PROOT_LOADER_DIR=/data/data/com.androsid/files/libexec/proot
 
+# Where libandroid-shmem keeps its System V key links. The Termux build pointed at Termux's own tmp dir.
+SHMEM_TMP_DIR=/data/data/com.androsid/files/proot-tmp
+
 # Same link-time hardening as the Termux packages.
 LDFLAGS_HARDEN="-Wl,--as-needed -Wl,-z,relro,-z,now"
 
@@ -173,7 +176,9 @@ EOF
 
 build_shmem() (
   cd "$SRC/libandroid-shmem"
-  logged shmem-make env CFLAGS=-O2 LDFLAGS="$LDFLAGS_HARDEN" make -j"$JOBS" libandroid-shmem.so
+  # shmem.c relies on Termux's patched NDK headers for open() and _PATH_TMP; the stock NDK has neither.
+  local cflags="-O2 -include fcntl.h -D_PATH_TMP=\\\"$SHMEM_TMP_DIR/\\\""
+  logged shmem-make env CFLAGS="$cflags" LDFLAGS="$LDFLAGS_HARDEN" make -j"$JOBS" libandroid-shmem.so
   install -D -m 0755 libandroid-shmem.so "$PREFIX/lib/libandroid-shmem.so"
   # PRoot includes <sys/shm.h> when built with libandroid-shmem; Bionic has none of its own.
   install -D -m 0644 shm.h "$PREFIX/include/sys/shm.h"
@@ -183,7 +188,10 @@ build_proot() (
   cd "$SRC/proot/src"
   local cppflags="-I$PREFIX/include -DARG_MAX=131072 -DVERSION=\\\"$PROOT_VERSION\\\""
   # GIT=false: otherwise the makefile swaps VERSION for the output of `git describe`.
-  logged proot-make env CPPFLAGS="$cppflags" LDFLAGS="-L$PREFIX/lib $LDFLAGS_HARDEN" \
+  # ashmem_memfd.c calls strcmp and memset without <string.h>; Termux's patched <stdio.h> includes it.
+  # Since clang 16 that is an error, so make it a warning again.
+  logged proot-make env CFLAGS=-Wno-error=implicit-function-declaration CPPFLAGS="$cppflags" \
+    LDFLAGS="-L$PREFIX/lib $LDFLAGS_HARDEN" \
     make -j"$JOBS" V=1 proot \
     GIT=false \
     HAS_LOADER_32BIT= \
